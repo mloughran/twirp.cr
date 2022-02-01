@@ -7,3 +7,14 @@ authors:
 license: MIT
 
 crystal: 1.0.0
+
+executables:
+  - protoc-gen-twirp_crystal
+
+targets:
+  protoc-gen-twirp_crystal:
+    main: src/protoc-gen-twirp_crystal.cr
+
+dependencies:
+  protobuf:
+    github: jeromegn/protobuf.cr

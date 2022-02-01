@@ -1,19 +1,12 @@
 require "protobuf"
 require "log"
 
-module GRPC
+module Twirp
   class Generator
-    Log.setup(:info, Log::IOBackend.new(io = STDERR))
-
     class Error < Exception
     end
 
-    def self.call
-      compile(Protobuf::CodeGeneratorRequest.from_protobuf(STDIN))
-        .to_protobuf(STDOUT)
-    end
-
-    def self.compile(request)
+    def self.call(request)
       if proto_files = request.proto_file
         package_map = PackageMap.new
 
@@ -26,8 +19,8 @@ module GRPC
 
         files = proto_files.map do |file|
           Protobuf::CodeGeneratorResponse::File.new(
-            name: "#{File.basename(file.name.not_nil!, ".proto")}_services.pb.cr",
-            content: new(file, package_map).compile,
+            name: "#{File.basename(file.name.not_nil!, ".proto")}.twirp.cr",
+            content: new(file, package_map).generate,
           )
         end
         Protobuf::CodeGeneratorResponse.new(file: files)
@@ -55,10 +48,9 @@ module GRPC
         .concat(file.crystal_ns)
     end
 
-    def compile
-      package_part = package ? "for #{package}" : ""
-      puts "## Generated from #{@file.name} #{package_part}".strip
-      puts "require \"grpc/service\""
+    def generate
+      puts "# Generated from #{@file.name} by twirp.cr"
+      puts "require \"twirp/service\""
 
       puts
 
@@ -78,7 +70,7 @@ module GRPC
           service.each do |service|
             puts "abstract class #{package_namespace}#{service.name}"
             indent do
-              puts "include GRPC::Service"
+              puts "include Twirp::Service"
               puts
               puts %{@@service_name = "#{package_name}.#{service.name}"}
               puts
