@@ -7,6 +7,16 @@ module Twirp
   # Application code may raise such errors to trigger the appropriate error response.
   #
   class Error < Exception
+    # Wrap an arbitrary exception as a twirp error (unless it's already one!)
+    def self.from_exception(ex : Exception) : Twirp::Error
+      case ex
+      when Twirp::Error
+        ex
+      else
+        Internal.new("#{ex.message} (#{ex.class})")
+      end
+    end
+
     @@code = "unknown"
     @@status = 500
 
@@ -96,10 +106,6 @@ module Twirp
     end
 
     class Internal < Error
-      def initialize(err : Exception)
-        @message = "#{err.message} (#{err.class})"
-      end
-
       @@code = "internal"
       @@status = 500
     end

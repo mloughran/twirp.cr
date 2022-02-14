@@ -67,12 +67,9 @@ module Twirp
         response_msg = service.handle(method_name, body)
         Log.info { "#{service_name}/#{method_name} completed" }
         return response_msg
-      rescue err : Twirp::Error
-        Log.info { "#{service_name}/#{method_name} raised error: #{err.class}" }
-        return err
       rescue err
         Log.info { "#{service_name}/#{method_name} raised error: #{err.class}" }
-        return Twirp::Error::Internal.new(err)
+        return Twirp::Error.from_exception(err)
       end
     end
 
