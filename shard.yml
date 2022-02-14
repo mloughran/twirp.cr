@@ -1,6 +1,10 @@
 name: twirp
 version: 0.1.0
 
+repository: https://github.com/mloughran/twirp.cr
+
+description: An implementation of Twirp in Crystal.
+
 authors:
   - Martyn Loughran <martyn@mloughran.com>
 
