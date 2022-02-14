@@ -56,7 +56,7 @@ module Twirp
       prefix, service_name, method_name = parse_twirp_path(request.path)
 
       unless prefix == @prefix
-        return Error::BadRoute.new("Invalid path prefix '#{prefix}', expected '#{@prefix}'")
+        return Error::BadRoute.new("Invalid path prefix '#{prefix}' (expected '#{@prefix}') in call to #{request.path}")
       end
 
       unless service = @services[service_name]?
