@@ -1,5 +1,6 @@
 require "http"
 
+require "./client"
 require "./error"
 
 module Twirp
@@ -23,6 +24,12 @@ module Twirp
             \{{method_name}}(\{{request_type}}.from_protobuf(request_body))
           else
             previous_def(method_name, request_body)
+          end
+        end
+
+        class Client < ::Twirp::Client({{@type.id}})
+          def \{{method_name}}(request : \{{request_type}}) : \{{response_type}}
+            call("\{{name}}", request, \{{response_type}})
           end
         end
       end

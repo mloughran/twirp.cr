@@ -1,6 +1,43 @@
 require "json"
 
 module Twirp
+  # Struct used to serialize and deserialize Twirp's JSON serialization of errors
+  struct Twerr
+    include JSON::Serializable
+
+    getter code : String
+    getter msg : String?
+    getter meta : Hash(String, JSON::Any) | Nil
+
+    def initialize(@code, @msg)
+    end
+
+    def to_err : Twirp::Error
+      CODE_TO_ERROR.fetch(@code, Twirp::Error).new(@msg)
+    end
+
+    CODE_TO_ERROR = {
+      "invalid_argument"    => Error::InvalidArgument,
+      "malformed"           => Error::Malformed,
+      "out_of_range"        => Error::OutOfRange,
+      "unauthenticated"     => Error::Unauthenticated,
+      "permission_denied"   => Error::PermissionDenied,
+      "not_found"           => Error::NotFound,
+      "bad_route"           => Error::BadRoute,
+      "canceled"            => Error::Canceled,
+      "deadline_exceeded"   => Error::DeadlineExceeded,
+      "already_exists"      => Error::AlreadyExists,
+      "aborted"             => Error::Aborted,
+      "failed_precondition" => Error::FailedPrecondition,
+      "resource_exhausted"  => Error::ResourceExhausted,
+      "unknown"             => Error::Unknown,
+      "internal"            => Error::InvalidArgument,
+      "dataloss"            => Error::Dataloss,
+      "unimplemented"       => Error::Unimplemented,
+      "unavailable"         => Error::Unavailable,
+    }
+  end
+
   # Implements all twirp errors as defined in
   # https://twitchtv.github.io/twirp/docs/spec_v7.html.
   #
@@ -17,15 +54,16 @@ module Twirp
       end
     end
 
-    @@code = "unknown"
-    @@status = 500
+    def self.from_json(io)
+      Twerr.from_json(io).to_err
+    end
 
     def to_json(io)
-      {
-        code: @@code,
-        msg:  message,
-      }.to_json(io)
+      Twerr.new(code, message).to_json(io)
     end
+
+    @@code = "unknown"
+    @@status = 500
 
     def status
       @@status
