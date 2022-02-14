@@ -50,7 +50,7 @@ module Twirp
 
     def generate
       puts "# Generated from #{@file.name} by twirp.cr"
-      puts "require \"twirp/service\""
+      puts "require \"twirp\""
 
       puts
 
