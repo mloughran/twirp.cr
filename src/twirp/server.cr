@@ -35,32 +35,43 @@ module Twirp
 
     private def handle(request, response) : Protobuf::Message | Twirp::Error
       unless request.method == "POST"
-        return Error::BadRoute.new("Unsupported method #{request.method} (only POST is allowed)")
+        msg = "Unsupported method #{request.method} (only POST is allowed)"
+        Log.warn { msg }
+        return Error::BadRoute.new(msg)
       end
 
       content_type = request.headers["Content-Type"]?
 
       unless content_type == "application/json" || content_type == "application/protobuf"
-        return Error::BadRoute.new("Unexpected Content-Type: #{content_type.inspect}")
+        msg = "Unexpected Content-Type: #{content_type.inspect}"
+        Log.warn { msg }
+        return Error::BadRoute.new(msg)
       end
 
       if content_type == "application/json"
         # protobuf.cr shard does not support JSON encoding/decoding
+        Log.warn { "Received application/json request which is not yet supported" }
         return Error::Unimplemented.new("Content-Type application/json not yet supported")
       end
 
       unless body = request.body
-        return Error::Malformed.new("Failed to read request body")
+        msg = "Failed to read request body"
+        Log.warn { msg }
+        return Error::Malformed.new(msg)
       end
 
       prefix, service_name, method_name = parse_twirp_path(request.path)
 
       unless prefix == @prefix
-        return Error::BadRoute.new("Invalid path prefix '#{prefix}' (expected '#{@prefix}') in call to #{request.path}")
+        msg = "Invalid path prefix '#{prefix}' (expected '#{@prefix}') in call to #{request.path}"
+        Log.warn { msg }
+        return Error::BadRoute.new(msg)
       end
 
       unless service = @services[service_name]?
-        return Error::BadRoute.new("Unknown service #{service_name}")
+        msg = "Unknown service #{service_name}"
+        Log.warn { msg }
+        return Error::BadRoute.new(msg)
       end
 
       begin
@@ -68,7 +79,7 @@ module Twirp
         Log.info { "#{service_name}/#{method_name} completed" }
         return response_msg
       rescue err
-        Log.info { "#{service_name}/#{method_name} raised error: #{err.class}" }
+        Log.warn { "#{service_name}/#{method_name} raised error: #{err.class}" }
         return Twirp::Error.from_exception(err)
       end
     end

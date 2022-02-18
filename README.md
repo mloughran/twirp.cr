@@ -84,6 +84,14 @@ To return a Twirp error, raise the appropriate `Twirp::Error` from your handler.
 	end
 	```
 
+#### Logging
+
+`Twirp::Server` produces log output when handling handling requests. This can be customised, e.g.:
+
+	```crystal
+	Twirp::Log.level = Log::Severity::Warn
+	```
+
 ## Development
 
 Install shards and build
