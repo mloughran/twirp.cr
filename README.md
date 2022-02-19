@@ -84,6 +84,8 @@ To return a Twirp error, raise the appropriate `Twirp::Error` from your handler.
 	end
 	```
 
+Any other errors raised by handler code will be caught, logged, and an `internal` Twirp error will be returned to the client. Exceptions can be captured by passing an `exception_handler` proc to `Twirp::Server.new`.
+
 #### Logging
 
 `Twirp::Server` produces log output when handling handling requests. This can be customised, e.g.:

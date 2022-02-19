@@ -10,7 +10,10 @@ module Twirp
 
     @services = Hash(String, Service).new
 
-    def initialize(service = nil, @prefix = "/twirp")
+    # Exception handler is called on non-twirp handler exceptions
+    @exception_handler : Proc(Exception, Nil)
+
+    def initialize(service = nil, @prefix = "/twirp", @exception_handler = ->(ex : Exception) {})
       self << service if service
     end
 
@@ -78,8 +81,12 @@ module Twirp
         response_msg = service.handle(method_name, body)
         Log.info { "#{service_name}/#{method_name} completed" }
         return response_msg
+      rescue err : Twirp::Error
+        Log.warn { "#{service_name}/#{method_name} raised twirp error: #{err.code}" }
+        return err
       rescue err
-        Log.warn { "#{service_name}/#{method_name} raised error: #{err.class}" }
+        Log.warn(exception: err) { "#{service_name}/#{method_name} raised a non-twirp error" }
+        @exception_handler.call(err)
         return Twirp::Error.from_exception(err)
       end
     end
