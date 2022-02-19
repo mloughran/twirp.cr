@@ -16,7 +16,7 @@ An implementation of [Twirp](https://github.com/twitchtv/twirp) in Crystal.
 
 ## Usage
 
-To see an example `proto` definition, generator, server, and client, see the included [example](https://github.com/mloughran/twirp.cr/example).
+To see an example `proto` definition, generator, server, and client, see the included [example](example).
 
 ### Protobuf generator
 
@@ -32,16 +32,16 @@ Typically you will also want to generate protobuf message definitions:
 
 For example:
 
-	```crystal
-	require "./example.twirp.cr"
-	require "./example.pb.cr"
+```crystal
+require "./example.twirp.cr"
+require "./example.pb.cr"
 
-	client = ExampleService::Client.new("localhost", 8080)
+client = ExampleService::Client.new("localhost", 8080)
 
-	req = HelloWorldRequest.new(name: "twirp")
-	resp = client.hello_world(req)
-	puts resp.greeting
-	```
+req = HelloWorldRequest.new(name: "twirp")
+resp = client.hello_world(req)
+puts resp.greeting
+```
 
 I've elected to raise an error (which will be a subclass of `Twirp::Error`) if a Twirp error response is received, rather that take the ruby approach of returning a result object. Exceptions will also be raised by the `HTTP::Client` in case of transport errors.
 
@@ -49,40 +49,40 @@ I've elected to raise an error (which will be a subclass of `Twirp::Error`) if a
 
 Implement a handler (subclassing the generated abstract class):
 
-	```crystal
-	class ExampleHandler < ExampleService
-	  def hello_world(req : HelloWorldRequest) : HelloWorldResponse
-	    HelloWorldResponse.new(greeting: "Hello #{req.name}")
-	  end
-	end
-	```
+```crystal
+class ExampleHandler < ExampleService
+  def hello_world(req : HelloWorldRequest) : HelloWorldResponse
+    HelloWorldResponse.new(greeting: "Hello #{req.name}")
+  end
+end
+```
 
 Pass this to a Twirp server (which is itself a `HTTP::Handler`):
 
-	```crystal
-	require "twirp/server"
-	
-	twirp_server = Twirp::Server.new(ExampleHandler.new)
-	```
+```crystal
+require "twirp/server"
+
+twirp_server = Twirp::Server.new(ExampleHandler.new)
+```
 
 Expose this via a `HTTP::Server`:
 
-	```crystal
-	server = HTTP::Server.new(twirp_server)
-	address = server.bind_tcp 8080
-	puts "Listening on http://#{address}"
-	server.listen
-	```
+```crystal
+server = HTTP::Server.new(twirp_server)
+address = server.bind_tcp 8080
+puts "Listening on http://#{address}"
+server.listen
+```
 
 To return a Twirp error, raise the appropriate `Twirp::Error` from your handler. For example:
 
-	```crystal
-	class ExampleHandler < ExampleService
-	  def hello_world(req : HelloWorldRequest) : HelloWorldResponse
-	    raise Twirp::Error::Unauthenticated.new("Sorry!")
-	  end
-	end
-	```
+```crystal
+class ExampleHandler < ExampleService
+  def hello_world(req : HelloWorldRequest) : HelloWorldResponse
+    raise Twirp::Error::Unauthenticated.new("Sorry!")
+  end
+end
+```
 
 Any other errors raised by handler code will be caught, logged, and an `internal` Twirp error will be returned to the client. Exceptions can be captured by passing an `exception_handler` proc to `Twirp::Server.new`.
 
@@ -90,9 +90,9 @@ Any other errors raised by handler code will be caught, logged, and an `internal
 
 `Twirp::Server` produces log output when handling handling requests. This can be customised, e.g.:
 
-	```crystal
-	Twirp::Log.level = Log::Severity::Warn
-	```
+```crystal
+Twirp::Log.level = Log::Severity::Warn
+```
 
 ## Development
 
