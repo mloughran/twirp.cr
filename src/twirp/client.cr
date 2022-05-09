@@ -8,6 +8,11 @@ module Twirp
       @client = HTTP::Client.new(host, port)
     end
 
+    # Adds a callback to execute before each request (see `HTTP::Client#before_request`)
+    def before_request(&callback : HTTP::Request ->) : Nil
+      @client.before_request(&callback)
+    end
+
     def call(rpc_name, request, response_type)
       response = @client.post("#{@prefix}/#{T.service_name}/#{rpc_name}",
         headers: HTTP::Headers{"Content-Type" => "application/protobuf"},
