@@ -4,8 +4,9 @@ require "./error"
 
 module Twirp
   class Client(T)
-    def initialize(host : String, port : Int32, @prefix = "/twirp")
-      @client = HTTP::Client.new(host, port)
+    def initialize(@uri : URI)
+      @client = HTTP::Client.new(uri)
+      @prefix = uri.path.presence || "/twirp"
     end
 
     # Adds a callback to execute before each request (see `HTTP::Client#before_request`)
@@ -14,10 +15,14 @@ module Twirp
     end
 
     def call(rpc_name, request, response_type)
-      response = @client.post("#{@prefix}/#{T.service_name}/#{rpc_name}",
-        headers: HTTP::Headers{"Content-Type" => "application/protobuf"},
-        body: request.to_protobuf,
-      )
+      begin
+        response = @client.post("#{@prefix}/#{T.service_name}/#{rpc_name}",
+          headers: HTTP::Headers{"Content-Type" => "application/protobuf"},
+          body: request.to_protobuf,
+        )
+      ensure
+        @client.close
+      end
 
       unless body = response.body?
         raise Twirp::Error::Malformed.new("Failed to read response body")
