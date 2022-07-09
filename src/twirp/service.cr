@@ -28,8 +28,8 @@ module Twirp
         end
 
         class Client < ::Twirp::Client({{@type.id}})
-          def \{{method_name}}(request : \{{request_type}}) : \{{response_type}}
-            call("\{{name}}", request, \{{response_type}})
+          def \{{method_name}}(req : \{{request_type}}) : \{{response_type}}
+            call("\{{name}}", req, \{{response_type}})
           end
         end
       end
