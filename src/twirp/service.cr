@@ -17,7 +17,7 @@ module Twirp
       macro rpc(name, receives request_type, returns response_type)
         \{% method_name = name.stringify.underscore.id %}
         
-        abstract def \{{method_name}}(request : \{{request_type}}) : \{{response_type}}
+        abstract def \{{method_name}}(req : \{{request_type}}) : \{{response_type}}
 
         def handle(method_name : String, request_body : IO)
           if method_name == \{{name.stringify}}
