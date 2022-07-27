@@ -4,24 +4,26 @@ require "./error"
 
 module Twirp
   class Client(T)
+    @callback : (HTTP::Request ->)?
+
     def initialize(@uri : URI)
-      @client = HTTP::Client.new(uri)
       @prefix = uri.path.presence || "/twirp"
     end
 
     # Adds a callback to execute before each request (see `HTTP::Client#before_request`)
     def before_request(&callback : HTTP::Request ->) : Nil
-      @client.before_request(&callback)
+      @callback = callback
     end
 
     def call(rpc_name, request, response_type)
-      begin
-        response = @client.post("#{@prefix}/#{T.service_name}/#{rpc_name}",
+      response = HTTP::Client.new(@uri) do |client|
+        if cb = @callback
+          client.before_request(&cb)
+        end
+        client.post("#{@prefix}/#{T.service_name}/#{rpc_name}",
           headers: HTTP::Headers{"Content-Type" => "application/protobuf"},
           body: request.to_protobuf,
         )
-      ensure
-        @client.close
       end
 
       unless body = response.body?
