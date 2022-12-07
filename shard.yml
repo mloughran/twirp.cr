@@ -25,3 +25,5 @@ targets:
 dependencies:
   protobuf:
     github: jeromegn/protobuf.cr
+  db:
+    github: crystal-lang/crystal-db
